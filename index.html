@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Imunisasi DPT — E-Flipbook</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-family:Arial,Helvetica,sans-serif}.viewer{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center}.page{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}.next{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:none;border:0;border-radius:999px;padding:14px 22px;background:#176653;color:#fff;font-size:16px;font-weight:700;box-shadow:0 5px 22px #0003;cursor:pointer}.next.visible{display:block}.next:focus-visible{outline:3px solid #f1c45d;outline-offset:3px}.start{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0005;padding:24px}.start.visible{display:flex}.start button{border:0;border-radius:999px;padding:15px 24px;background:#176653;color:#fff;font-size:17px;font-weight:700;box-shadow:0 5px 22px #0003;cursor:pointer}.status{position:fixed;left:12px;bottom:12px;padding:5px 8px;border-radius:8px;background:#ffffffb8;color:#45645a;font-size:11px;opacity:0;pointer-events:none}.status.visible{opacity:1}
+</style>
+</head>
+<body>
+<main class="viewer" aria-label="E-Flipbook Imunisasi DPT"><img id="page" class="page" src="assets/page-01.jpg" alt="Halaman 1 booklet Imunisasi DPT"></main>
+<audio id="audio" preload="auto" playsinline></audio>
+<button id="next" class="next" type="button">Halaman berikutnya →</button>
+<div id="start" class="start"><button id="startButton" type="button">▶ Mulai audio</button></div>
+<div id="status" class="status" aria-live="polite"></div>
+<script>
+(()=>{
+ const total=12, pageImg=document.getElementById('page'), audio=document.getElementById('audio'), next=document.getElementById('next'), start=document.getElementById('start'), startButton=document.getElementById('startButton'), status=document.getElementById('status');
+ let page=1, started=false, ended=false, busy=false;
+ const path=n=>`assets/page-${String(n).padStart(2,'0')}.jpg`;
+ const audioPath=n=>`assets/audio-${String(n).padStart(2,'0')}.mp3`;
+ function showStatus(t){status.textContent=t;status.classList.add('visible');window.setTimeout(()=>status.classList.remove('visible'),2200)}
+ async function playCurrent(){
+   audio.src=audioPath(page); audio.load();
+   try { await audio.play(); started=true; start.classList.remove('visible'); }
+   catch(e){ start.classList.add('visible'); startButton.textContent='▶ Mulai audio halaman '+page; }
+ }
+ function render(){pageImg.src=path(page);pageImg.alt=`Halaman ${page} booklet Imunisasi DPT`;next.classList.remove('visible');ended=false;}
+ async function nextPage(){if(busy||!ended||page>=total)return;busy=true;audio.pause();page++;render();await playCurrent();busy=false;}
+ next.addEventListener('click',nextPage);
+ audio.addEventListener('ended',()=>{ended=true;if(page<total)next.classList.add('visible');else showStatus('Booklet selesai');});
+ startButton.addEventListener('click',()=>{started=true;playCurrent();});
+ // Coba mulai audio otomatis saat halaman dibuka. Jika browser memblokir autoplay,
+ // tampilkan hanya tombol mulai yang diperlukan oleh kebijakan browser.
+ window.addEventListener('load',()=>{playCurrent();});
+ document.addEventListener('keydown',e=>{if((e.key==='ArrowRight'||e.key==='Enter')&&ended&&page<total)nextPage();});
+})();
+</script>
+</body>
+</html>
